@@ -22,6 +22,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+import FrameBuilder
+
 gArgs = []
 
 ####################
@@ -34,6 +36,7 @@ def handle_main_arg():
     parser.add_argument("-f","--file", required=True, help="File name to read the data from")
     parser.add_argument("-o","--output", help="File name for output result")
     parser.add_argument("-a","--anchor", help="anchorid to get")
+    parser.add_argument("-g","--graph", help="plot graph")
     gArgs = parser.parse_args()
 
 
@@ -41,53 +44,22 @@ def handle_main_arg():
 def main():
     global gArgs
 
-    hubTimeArray= np.empty(0)
-    counterArray= np.empty(0)
-    distanceArray= np.empty(0)
-    fpidxArray= np.empty(0)
-    overallrxpArray= np.empty(0)
-    fppArray= np.empty(0)
-
     print ("Python version:"+sys.version)
 
     if gArgs.file:
-        with open(gArgs.file, newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=';')
-            for row in reader:
-                if(row[1]=="U3"):
-                    #print("Hub Time:",row[2])
-                    hubTimeArray = np.append(hubTimeArray, int(row[2]))
-                    #print("Ranging counter:",row[3])
-                    counterArray = np.append(counterArray, int(row[3]))
-                    #print("json:",row[4])
-                    try:
-                        parsedData = json.loads(row[4])
-                        if gArgs.anchor:
-                            #print("Distance:",parsedData[gArgs.anchor]["d"])
-                            distanceArray = np.append(distanceArray, float(parsedData[gArgs.anchor]["d"]))
-                            fpidxArray = np.append(fpidxArray, float(parsedData[gArgs.anchor]["dt"]))
-                            overallrxpArray = np.append(overallrxpArray, float(parsedData[gArgs.anchor]["snr"]))
-                            fppArray = np.append(fppArray, float(parsedData[gArgs.anchor]["dPow"]))
+        fb = FrameBuilder.FrameBuilder(gArgs.file, gArgs.anchor)
 
-                    except json.decoder.JSONDecodeError:
-                        print("Error on incomplete line")
-
-            #Create the dataframe
-            #print("hubTimeArray.size:", hubTimeArray.size,"counterArray.size:", counterArray.size,"distanceArray.size:", distanceArray.size,"fpidxArray.size:", fpidxArray.size,"overallrxpArray.size:", overallrxpArray.size,"fppArray.size:", fppArray.size, )
-            df = pandas.DataFrame({'Timestamp':hubTimeArray,'RangingCounter':counterArray, 'Distance': distanceArray, 'FirstPathIndex':fpidxArray, 'OverallRxPower': overallrxpArray, 'FirstPathPower': fppArray })
-            #print(df)
-            #plt.figure()
+        if gArgs.graph:
+            df= fb.getDataFrame()
             df.plot(x='Timestamp', y='Distance')
             df.plot(x='Timestamp', y='FirstPathIndex')
             df.plot(x='Timestamp', y='OverallRxPower')
             df.plot(x='Timestamp', y='FirstPathPower')
             plt.show()
+
+        if gArgs.output:
+            fb.exportToCsv(gArgs.output)
             
-
-        #print("hubTimeArray:",hubTimeArray)
-
-    #writer = csv.writer(outcsv)
-    #writer.writerow(["Date", "temperature 1", "Temperature 2"])
 
     print ("Script Terminated")
 
