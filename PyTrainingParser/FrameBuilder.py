@@ -34,21 +34,34 @@ class FrameBuilder:
             for row in reader:
                 if(row[1]=="U3"):
                     #print("Hub Time:",row[2])
-                    self._hubTimeArray = np.append(self._hubTimeArray, int(row[2]))
                     #print("Ranging counter:",row[3])
-                    self._counterArray = np.append(self._counterArray, int(row[3]))
                     #print("json:",row[4])
                     try:
                         parsedData = json.loads(row[4])
                         if self._anchorId:
+                            self._hubTimeArray = np.append(self._hubTimeArray, int(row[2]))
+                            self._counterArray = np.append(self._counterArray, int(row[3]))
                             #print("Distance:",parsedData[gArgs.anchor]["d"])
                             self._distanceArray = np.append(self._distanceArray, float(parsedData[self._anchorId]["d"]))
                             self._fpidxArray = np.append(self._fpidxArray, float(parsedData[self._anchorId]["dt"]))
                             self._overallrxpArray = np.append(self._overallrxpArray, float(parsedData[self._anchorId]["snr"]))
                             self._fppArray = np.append(self._fppArray, float(parsedData[self._anchorId]["dPow"]))
-
                     except json.decoder.JSONDecodeError:
                         print("Error on incomplete line")
+                elif (row[1]=="U3.1"):
+                    try:
+                        parsedData = json.loads(row[4])
+                        if self._anchorId:
+                            self._hubTimeArray = np.append(self._hubTimeArray, int(row[2]))
+                            self._counterArray = np.append(self._counterArray, int(row[3]))
+                            self._distanceArray = np.append(self._distanceArray, float(parsedData[self._anchorId]["d"]))
+                            self._fpidxArray = np.append(self._fpidxArray, float(parsedData[self._anchorId]["iF"]))
+                            self._overallrxpArray = np.append(self._overallrxpArray, float(parsedData[self._anchorId]["pR"]))
+                            self._fppArray = np.append(self._fppArray, float(parsedData[self._anchorId]["pF"]))
+                    except json.decoder.JSONDecodeError:
+                        print("Error on incomplete line")
+
+            #print(self._hubTimeArray.size, self._counterArray.size,self._distanceArray.size,self._fpidxArray.size,self._overallrxpArray.size,self._fppArray.size)
             self._dataFrame = pandas.DataFrame({'Timestamp':self._hubTimeArray,'RangingCounter':self._counterArray, 'Distance': self._distanceArray, 'FirstPathIndex':self._fpidxArray, 'OverallRxPower': self._overallrxpArray, 'FirstPathPower': self._fppArray })
       
     def getDataFrame(self):
