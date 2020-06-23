@@ -36,7 +36,7 @@ def handle_main_arg():
     parser.add_argument("-f","--file", required=True, help="File name to read the data from")
     parser.add_argument("-o","--output", help="File name for output result")
     parser.add_argument("-a","--anchor", help="anchorid to get")
-    parser.add_argument("-g","--graph", help="plot graph")
+    parser.add_argument("-g","--graph", help="plot graph", action="store_true")
     gArgs = parser.parse_args()
 
 
@@ -51,10 +51,15 @@ def main():
 
         if gArgs.graph:
             df= fb.getDataFrame()
+            version = fb.getVersion()
             df.plot(x='Timestamp', y='Distance')
-            df.plot(x='Timestamp', y='FirstPathIndex')
             df.plot(x='Timestamp', y='OverallRxPower')
             df.plot(x='Timestamp', y='FirstPathPower')
+            if version=="U3.2":
+                df.plot(x='Timestamp', y='MaxPathPower')
+                df.plot(x='Timestamp', y='MaxPathVsEdgeIndex')
+            else:
+                df.plot(x='Timestamp', y='FirstPathIndex')
             plt.show()
 
         if gArgs.output:
