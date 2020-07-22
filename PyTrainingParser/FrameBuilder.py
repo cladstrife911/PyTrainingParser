@@ -67,7 +67,8 @@ class FrameBuilder:
                 elif (row[1]=="U3.1"):
                     self._version = "U3.1"
                     try:
-                        parsedData = json.loads(row[4])
+                        line = row[4].replace('\'','"')
+                        parsedData = json.loads(line)
                         if self._anchorId in parsedData:
                             self._hubTimeArray = np.append(self._hubTimeArray, int(row[2]))
                             self._counterArray = np.append(self._counterArray, int(row[3]))
@@ -83,7 +84,8 @@ class FrameBuilder:
                     self._version = "U3.2"
                     try:
                         print("Hub Time:",row[2])
-                        parsedData = json.loads(row[4])
+                        line = row[4].replace('\'','"')
+                        parsedData = json.loads(line)
                         if self._anchorId in parsedData:
                             self._hubTimeArray = np.append(self._hubTimeArray, int(row[2]))
                             self._counterArray = np.append(self._counterArray, int(row[3]))
